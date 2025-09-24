@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from evaluate_f import Parameters
+from evaluate_f import Parameters, eval_f
 from evaluate_Jf import eval_Jf_analytic, eval_Jf_auto
-
+from provided_solvers.eval_Jf_FiniteDifference import eval_Jf_FiniteDifference
 
 @pytest.mark.parametrize("p, expected_Jf", [
     # Test case 1: One car
@@ -28,12 +28,18 @@ def test_evaluate_Jf(p, expected_Jf):
     Jf_analytic = eval_Jf_analytic(p)
     assert np.allclose(Jf_analytic, expected_Jf), f"Analytic Jacobian does not match expected value."
 
-    # # Evaluate the Jacobian using automatic differentiation
-    # # Use a sample state vector x0
-    # n = len(p)
-    # x0 = np.zeros(2 * n)  # Arbitrary Sample state vector
+    # Use a sample state vector x0
+    n = len(p)
+    x0 = np.zeros(2 * n)  # Arbitrary Sample state vector
+
+    # # Evaluate the Jacobian using automatic differentiation (comm)
     # Jf_auto = eval_Jf_auto(eval_f, x0, p)
     # assert np.allclose(Jf_auto, expected_Jf), f"Auto-diff Jacobian does not match expected value."
+
+    # Evaluate the Jacobian using finite difference
+    Jf_fd, dxFD = eval_Jf_FiniteDifference(eval_f, x0.reshape(-1, 1), p, None)
+    assert np.allclose(Jf_fd, expected_Jf, atol=1e-5 )
+
    
 
 
