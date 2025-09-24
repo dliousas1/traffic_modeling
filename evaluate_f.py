@@ -1,10 +1,12 @@
+import numpy as np
+
 class Parameters:
     def __init__(self, alpha, beta, tau):
         self.alpha = alpha
         self.beta = beta
         self.tau = tau
 
-def eval_f(x, p):
+def eval_f(x, p, u=None):
     """
     Computes the dynamics function f(x, p) for a given state vector 
     x and parameters vector p.
@@ -35,6 +37,6 @@ def eval_f(x, p):
 
             a_i = (alpha_i/tau_i) * (z_j - z_i) + beta_i * (v_j - v_i) - alpha_i * v_i
 
-        f.extend([v_i, a_i])
-    
-    return f
+        f.extend([float(v_i), float(a_i)])
+
+    return np.array(f)
