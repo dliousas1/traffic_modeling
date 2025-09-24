@@ -1,4 +1,4 @@
-import numpy as np
+import jax.numpy as jnp
 
 class Parameters:
     def __init__(self, alpha, beta, tau):
@@ -21,7 +21,8 @@ def eval_f(x, p, u=None):
     n = len(p)
     assert len(x) == 2 * n, "State vector x must have length 2 * number of cars (n)."
 
-    f = []
+    # Preallocate f
+    f = jnp.zeros(2 * n)
     for i in range(n):
         z_i, v_i = x[2*i], x[2*i + 1]
         
@@ -37,6 +38,7 @@ def eval_f(x, p, u=None):
 
             a_i = (alpha_i/tau_i) * (z_j - z_i) + beta_i * (v_j - v_i) - alpha_i * v_i
 
-        f.extend([float(v_i), float(a_i)])
+        f = f.at[2*i].set(v_i)
+        f = f.at[2*i + 1].set(a_i)
 
-    return np.array(f)
+    return f
