@@ -9,7 +9,7 @@ from evaluate_Jf import eval_Jf_analytic
 
 if __name__=="__main__":
     # Set up the problem whose sparsity pattern we want to analyze
-    num_cars = 1000
+    num_cars = 30
     
     parameters = [
         Parameters(
@@ -23,6 +23,17 @@ if __name__=="__main__":
     Jf_alternate = eval_Jf_analytic(parameters, order="alternate")
     Jf_position_first = eval_Jf_analytic(parameters, order="position_first")
     Jf_velocity_first = eval_Jf_analytic(parameters, order="velocity_first")
+
+    # Remove rows associated with position of first car and position/velocity of last car,
+    # because these cause singularities.
+    Jf_alternate = np.delete(Jf_alternate, [2*(num_cars-1), 2*(num_cars-1)+1], axis=0)
+    Jf_alternate = np.delete(Jf_alternate, [2*(num_cars-1), 2*(num_cars-1)+1], axis=1)
+
+    Jf_position_first = np.delete(Jf_position_first, [num_cars-1, 2*num_cars-1], axis=0)
+    Jf_position_first = np.delete(Jf_position_first, [num_cars-1, 2*num_cars-1], axis=1)
+
+    Jf_velocity_first = np.delete(Jf_velocity_first, [2*num_cars-1, num_cars-1], axis=0)
+    Jf_velocity_first = np.delete(Jf_velocity_first, [2*num_cars-1, num_cars-1], axis=1)
 
     # Compute the percentage of non-zero entries
     nnz = np.count_nonzero(Jf_alternate)
@@ -61,31 +72,31 @@ if __name__=="__main__":
     print(f"General estimated upper bound on fill-ins during LU factorization with velocity_first ordering: O({bandwidth_velocity_first}n)")
     print("-----")
 
-    # # Perform LU factorization to see actual fill-ins
-    # lu_alternate = splu(csc_matrix(Jf_alternate),
-    #         permc_spec="NATURAL",   # no column reordering
-    #         diag_pivot_thresh=0.0)  # no partial pivoting (use diagonal)    
-    # num_fill_ins_alternate = np.count_nonzero(lu_alternate.L.toarray()) + np.count_nonzero(lu_alternate.U.toarray()) - nnz
+    # Perform LU factorization to see actual fill-ins
+    lu_alternate = splu(csc_matrix(Jf_alternate),
+            permc_spec="NATURAL",   # no column reordering
+            diag_pivot_thresh=0.0)  # no partial pivoting (use diagonal)    
+    num_fill_ins_alternate = np.count_nonzero(lu_alternate.L.toarray()) + np.count_nonzero(lu_alternate.U.toarray()) - nnz
 
-    # lu_position_first = splu(csc_matrix(Jf_position_first),
-    #                          permc_spec="NATURAL",   # no column reordering
-    #                          diag_pivot_thresh=0.0)  # no partial pivoting (use diagonal)
-    # num_fill_ins_position_first = np.count_nonzero(lu_position_first.L.toarray()) + np.count_nonzero(lu_position_first.U.toarray()) - nnz
+    lu_position_first = splu(csc_matrix(Jf_position_first),
+                             permc_spec="NATURAL",   # no column reordering
+                             diag_pivot_thresh=0.0)  # no partial pivoting (use diagonal)
+    num_fill_ins_position_first = np.count_nonzero(lu_position_first.L.toarray()) + np.count_nonzero(lu_position_first.U.toarray()) - nnz
 
-    # lu_velocity_first = splu(csc_matrix(Jf_velocity_first),
-    #                         permc_spec="NATURAL",   # no column reordering
-    #                         diag_pivot_thresh=0.0)  # no partial pivoting (use diagonal)
-    # num_fill_ins_velocity_first = np.count_nonzero(lu_velocity_first.L.toarray()) + np.count_nonzero(lu_velocity_first.U.toarray()) - nnz
+    lu_velocity_first = splu(csc_matrix(Jf_velocity_first),
+                            permc_spec="NATURAL",   # no column reordering
+                            diag_pivot_thresh=0.0)  # no partial pivoting (use diagonal)
+    num_fill_ins_velocity_first = np.count_nonzero(lu_velocity_first.L.toarray()) + np.count_nonzero(lu_velocity_first.U.toarray()) - nnz
 
-    # print(f"Estimated number of fill-ins for this problem during LU factorization with alternate ordering: {bandwidth_alternate * num_cars}")
-    # print(f"Actual number of fill-ins for this problem during LU factorization with alternate ordering: {num_fill_ins_alternate}")
+    print(f"Estimated number of fill-ins for this problem during LU factorization with alternate ordering: {bandwidth_alternate * num_cars}")
+    print(f"Actual number of fill-ins for this problem during LU factorization with alternate ordering: {num_fill_ins_alternate}")
 
-    # print(f"Estimated number of fill-ins for this problem during LU factorization with position_first ordering: {bandwidth_position_first * num_cars}")
-    # print(f"Actual number of fill-ins for this problem during LU factorization with position_first ordering: {num_fill_ins_position_first}")
+    print(f"Estimated number of fill-ins for this problem during LU factorization with position_first ordering: {bandwidth_position_first * num_cars}")
+    print(f"Actual number of fill-ins for this problem during LU factorization with position_first ordering: {num_fill_ins_position_first}")
 
-    # print(f"Estimated number of fill-ins for this problem during LU factorization with velocity_first ordering: {bandwidth_velocity_first * num_cars}")
-    # print(f"Actual number of fill-ins for this problem during LU factorization with velocity_first ordering: {num_fill_ins_velocity_first}")
-    # print("-----")
+    print(f"Estimated number of fill-ins for this problem during LU factorization with velocity_first ordering: {bandwidth_velocity_first * num_cars}")
+    print(f"Actual number of fill-ins for this problem during LU factorization with velocity_first ordering: {num_fill_ins_velocity_first}")
+    print("-----")
 
     # Compare the sparsity patterns
     plt.figure(figsize=(15, 5))
