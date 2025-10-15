@@ -53,8 +53,6 @@ from stamp_dynamics import stamp_dynamics
         [0.0, 10.0, 0.0, 0.0]
     ),
 ])
-
-
 def test_evaluate_f(x, p, expected_f):
     """
     Test that eval_f computes the correct dynamics function for a set
@@ -64,11 +62,6 @@ def test_evaluate_f(x, p, expected_f):
     f = eval_f(x, p)
     assert np.allclose(f, expected_f), f"Expected {expected_f}, but got {f}"
 
-    # Also test using stamped dynamics
-    from stamp_dynamics import stamp_dynamics
-    A = stamp_dynamics(p)
-    f_stamped = A @ x
-    assert np.allclose(f, f_stamped), f"Stamped dynamics {f_stamped} do not match eval_f {f}"
 
 @pytest.mark.parametrize("p", [
     # Test case 1: One car

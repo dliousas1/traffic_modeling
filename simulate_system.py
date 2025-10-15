@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 from provided_solvers.SimpleSolver import SimpleSolver
 from evaluate_f import eval_f, Parameters
 
-
-def simulate_system():
+if __name__ == "__main__":
     parameters = [Parameters(1.0, 1.0, 1.0), Parameters(1.0, 1.0, 1.5), Parameters(1.0, 1.0, 2.0), Parameters(1.0, 1.0, 1.0)]
     x, t = SimpleSolver(eval_f, [0.0, 1.0, 10.0, 1.0, 15.0, 0.5, 15.2, 0.5], parameters, lambda t: None, 1000, 0.01, visualize=False)
     
@@ -41,7 +40,3 @@ def simulate_system():
         print(f"Expected final distance between car {i+1} and car {i+2}: {x[2*i+1, -1]*parameters[i].tau:.4f} m")
         print(f"Final velocity of car {i+1}: {x[2*i+1, -1]:.4f} m/s")
         print()
-
-if __name__ == "__main__":
-    simulate_system()
-

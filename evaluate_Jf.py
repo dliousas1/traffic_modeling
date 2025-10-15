@@ -1,9 +1,13 @@
 import numpy as np
 import jax
 import jax.numpy as jnp
+
+from typing import Literal
+
 from stamp_dynamics import stamp_dynamics
 
-def eval_Jf_analytic(p):
+
+def eval_Jf_analytic(p, order: Literal['alternate', 'position_first', 'velocity_first']='alternate') -> np.ndarray:
     """
     evaluates the Jacobian analytically since the system is linear
 
@@ -12,7 +16,7 @@ def eval_Jf_analytic(p):
     Outputs:
     Jf: numpy array of shape (2n, 2n), Jacobian of the dynamics function with parameters p.
     """
-    Jf = stamp_dynamics(p)
+    Jf = stamp_dynamics(p, order=order)
     return Jf
     
 def eval_Jf_auto(eval_f, x0, p):
