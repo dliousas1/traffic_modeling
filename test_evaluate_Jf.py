@@ -32,10 +32,6 @@ def test_evaluate_Jf(p, expected_Jf):
     n = len(p)
     x0 = np.zeros(2 * n)  # Arbitrary Sample state vector
 
-    # # Evaluate the Jacobian using automatic differentiation (comm)
-    # Jf_auto = eval_Jf_auto(eval_f, x0, p)
-    # assert np.allclose(Jf_auto, expected_Jf), f"Auto-diff Jacobian does not match expected value."
-
     # Evaluate the Jacobian using finite difference
     Jf_fd, dxFD = eval_Jf_FiniteDifference(eval_f, x0.reshape(-1, 1), p, None)
     assert np.allclose(Jf_fd, expected_Jf, atol=1e-5 )
