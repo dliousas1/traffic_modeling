@@ -9,25 +9,25 @@ from evaluate_Jf import eval_Jf_analytic
     # Test case 1: One car
     (
         [0.0, 1.0],
-        [Parameters(1.0, 0.5, 1.0)],
+        [Parameters(1.0, 0.5, 1.0, 0.0, 0.0, 0.0)],
         [1.0, 0.0]
     ),
     # Test case 2: Two cars, first car accelerating
     (
         [0.0, 1.0, 10.0, 0.0],
-        [Parameters(1.0, 0.5, 1.0), Parameters(1.0, 0.5, 1.0)],
+        [Parameters(1.0, 0.5, 1.0, 0.0, 0.0, 0.0), Parameters(1.0, 0.5, 1.0, 0.0, 0.0, 0.0)],
         [1.0, 1.0/1.0 * (10.0 - 0.0) + 0.5 * (0.0 - 1.0) - 1.0*1.0, 0.0, 0.0]
     ),
     # Test case 3: Two cars, first car decelerating
     (
         [9.0, 4.0, 10.0, 5.0],
-        [Parameters(1.0, 0.5, 1.0), Parameters(1.0, 0.5, 1.0)],
+        [Parameters(1.0, 0.5, 1.0, 0.0, 0.0, 0.0), Parameters(1.0, 0.5, 1.0, 0.0, 0.0, 0.0)],
         [4.0, 1.0/1.0 * (10.0 - 9.0) + 0.5 * (5.0 - 4.0) - 1.0*4.0, 5.0, 0.0]
     ),
     # Test case 4: Three cars with different states and parameters
     (
         [0.0, 1.0, 10.0, 2.0, 20.0, 3.0],
-        [Parameters(1.5, 0.75, 1.2), Parameters(0.8, 0.4, 0.9), Parameters(1.0, 0.5, 1.0)],
+        [Parameters(1.5, 0.75, 1.2, 0.0, 0.0, 0.0), Parameters(0.8, 0.4, 0.9, 0.0, 0.0, 0.0), Parameters(1.0, 0.5, 1.0, 0.0, 0.0, 0.0)],
         [
             1.0,
             1.5/1.2 * (10.0 - 0.0) + 0.75 * (2.0 - 1.0) - 1.5*1.0,
@@ -40,7 +40,7 @@ from evaluate_Jf import eval_Jf_analytic
     # Test case 5: Three cars spread such that acceleration is 0.0
     (
         [0.0, 5.0, 25.0, 5.0, 40.0, 5.0],
-        [Parameters(12.5, 0.8, 5.0), Parameters(1.2, 1.5, 3.0), Parameters(5.3, 2.4, 1.5)],
+        [Parameters(12.5, 0.8, 5.0, 0.0, 0.0, 0.0), Parameters(1.2, 1.5, 3.0, 0.0, 0.0, 0.0), Parameters(5.3, 2.4, 1.5, 0.0, 0.0, 0.0)],
         [
             5.0, 0.0, 5.0, 0.0, 5.0, 0.0
         ]
@@ -49,7 +49,7 @@ from evaluate_Jf import eval_Jf_analytic
     # Test case 6: Two cars with zero velocities
     (
         [0.0, 0.0, 10.0, 0.0],
-        [Parameters(1.0, 0.5, 1.0), Parameters(1.0, 0.5, 1.0)],
+        [Parameters(1.0, 0.5, 1.0, 0.0, 0.0, 0.0), Parameters(1.0, 0.5, 1.0, 0.0, 0.0, 0.0)],
         [0.0, 10.0, 0.0, 0.0]
     ),
 ])
@@ -69,7 +69,7 @@ def test_evaluate_f(x, p, expected_f):
 
 @pytest.mark.parametrize("p", [
     # Test case 1: One car
-    [Parameters(12.5, 0.8, 5.0), Parameters(1.2, 1.5, 3.0), Parameters(5.3, 2.4, 1.5)]
+    [Parameters(12.5, 0.8, 5.0, 0.0, 0.0, 0.0), Parameters(1.2, 1.5, 3.0, 0.0, 0.0, 0.0), Parameters(5.3, 2.4, 1.5, 0.0, 0.0, 0.0)]
 ])
 def test_evaluate_f_steady_state(p):
     """

@@ -2,10 +2,13 @@ import numpy as np
 
 
 class Parameters:
-    def __init__(self, alpha, beta, tau):
+    def __init__(self, alpha, beta, tau, K, L, d0):
         self.alpha = alpha
         self.beta = beta
         self.tau = tau
+        self.K = K
+        self.L = L
+        self.d0 = d0
 
 def eval_f(x, p, u=None):
     """
@@ -37,9 +40,9 @@ def eval_f(x, p, u=None):
         else:
             j = i + 1
             z_j, v_j = x[2*j], x[2*j + 1]
-            alpha_i, beta_i, tau_i = p[i].alpha, p[i].beta, p[i].tau
+            alpha_i, beta_i, tau_i, K_i, L_i, d0_i = p[i].alpha, p[i].beta, p[i].tau, p[i].K, p[i].L, p[i].d0
 
-            a_i = (alpha_i/tau_i) * (z_j - z_i) + beta_i * (v_j - v_i) - alpha_i * v_i
+            a_i = (alpha_i/tau_i) * (z_j - z_i - K_i * np.exp(-L_i * (z_j - z_i - d0_i))) + beta_i * (v_j - v_i) - alpha_i * v_i
 
         f[2*i] = v_i.item()
         f[2*i + 1] = a_i.item()
