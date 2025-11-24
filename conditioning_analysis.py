@@ -1,6 +1,6 @@
 import numpy as np;
-from evaluate_f import eval_f, Parameters
-from evaluate_Jf import eval_Jf_analytic
+from evaluate_f import Parameters
+from evaluate_Jf import eval_Jf_analytic_linear
 from icecream import ic
 import matplotlib.pyplot as plt
 import scipy.sparse as sp
@@ -26,7 +26,7 @@ def conditioning_analysis(n, alpha, beta, tau, x0, u=None):
     p = [Parameters(alpha, beta, tau) for _ in range(n)]
     
     # Evaluate analytic Jacobian
-    Jf = eval_Jf_analytic(p)
+    Jf = eval_Jf_analytic_linear(p)
     
     # Extract the jacobian matrix for the n-1 cars that follow the lead car
     Jf = Jf[:2*(n-1), :2*(n-1)]
@@ -65,7 +65,7 @@ def conditioning_analysis_anomaly(n, alpha, beta, tau, x0, u=None, k_anomaly=0, 
     p[k_anomaly] = Parameters(alpha_anomaly, beta_anomaly, tau_anomaly)
     
     # Evaluate analytic Jacobian
-    Jf = eval_Jf_analytic(p)
+    Jf = eval_Jf_analytic_linear(p)
     
     # Extract the jacobian matrix for the n-1 cars that follow the lead car
     Jf = Jf[:2*(n-1), :2*(n-1)]

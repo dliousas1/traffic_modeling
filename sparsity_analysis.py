@@ -4,7 +4,7 @@ from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import splu
     
 from evaluate_f import Parameters
-from evaluate_Jf import eval_Jf_analytic
+from evaluate_Jf import eval_Jf_analytic_linear
 
 
 if __name__=="__main__":
@@ -20,9 +20,9 @@ if __name__=="__main__":
     ]
 
     # Compute the jacobian analytically
-    Jf_alternate = eval_Jf_analytic(parameters, order="alternate")
-    Jf_position_first = eval_Jf_analytic(parameters, order="position_first")
-    Jf_velocity_first = eval_Jf_analytic(parameters, order="velocity_first")
+    Jf_alternate = eval_Jf_analytic_linear(parameters, order="alternate")
+    Jf_position_first = eval_Jf_analytic_linear(parameters, order="position_first")
+    Jf_velocity_first = eval_Jf_analytic_linear(parameters, order="velocity_first")
 
     # Remove rows associated with position of first car and position/velocity of last car,
     # because these cause singularities.

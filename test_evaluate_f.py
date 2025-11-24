@@ -3,7 +3,7 @@ import numpy as np
 
 from evaluate_f import Parameters, eval_f
 from provided_solvers.SimpleSolver import SimpleSolver
-from evaluate_Jf import eval_Jf_analytic
+from evaluate_Jf import eval_Jf_analytic_linear
 
 @pytest.mark.parametrize("x, p, expected_f", [
     # Test case 1: One car
@@ -53,19 +53,45 @@ from evaluate_Jf import eval_Jf_analytic
         [0.0, 10.0, 0.0, 0.0]
     ),
 ])
-def test_evaluate_f(x, p, expected_f):
+def test_evaluate_f_linear(x, p, expected_f):
     """
-    Test that eval_f computes the correct dynamics function for a set
-    of test states and parameters.
+    Test that eval_f computes the correct dynamics function when the system is linear 
+    (i.e. the coefficients in the exponential braking term are 0.0).
     """
     # x_vector = np.array([item for state in x for item in (state.position, state.velocity)])
     f = eval_f(x, p)
     assert np.allclose(f, expected_f), f"Expected {expected_f}, but got {f}"
 
     # Also test using stamped dynamics
-    A = eval_Jf_analytic(p)
+    A = eval_Jf_analytic_linear(p)
     f_stamped = A @ x
     assert np.allclose(f, f_stamped), f"Stamped dynamics {f_stamped} do not match eval_f {f}"
+
+
+@pytest.mark.parametrize("x, p, expected_f", [
+    # Test case 1: One car with nonlinear braking (should behave the same as linear since only one car)
+    (
+        [0.0, 1.0],
+        [Parameters(1.0, 0.5, 1.0, 0.1, 0.2, 0.3)],
+        [1.0, 0.0]
+    ),
+    # Test case 2: Two cars with nonlinear braking
+    (
+        [0.0, 1.0, 10.0, 0.0],
+        [Parameters(1.0, 0.5, 1.0, 0.1, 0.2, 0.3), Parameters(1.0, 0.5, 1.0, 0.1, 0.2, 0.3)],
+        [1.0,
+         1.0/1.0 *(10.0 - 0.0 - 0.1 * np.exp(-0.2 * (10.0 - 0.0 - 0.3))) + 0.5 * (0.0 - 1.0) - 1.0*1.0,
+         0.0,
+         0.0]
+    ),
+])
+def test_evaluate_f_nonlinear(x, p, expected_f):
+    """
+    Test that eval_f computes the correct dynamics function when the system is nonlinear 
+    (i.e. the coefficients in the exponential braking term are non-zero).
+    """
+    f = eval_f(x, p)
+    assert np.allclose(f, expected_f), f"Expected {expected_f}, but got {f}"
 
 @pytest.mark.parametrize("p", [
     # Test case 1: One car
