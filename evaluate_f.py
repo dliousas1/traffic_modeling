@@ -2,15 +2,16 @@ import numpy as np
 
 
 class Parameters:
-    def __init__(self, alpha, beta, tau, K, L, d0):
+    def __init__(self, alpha, beta, tau, K, L, d0, lead_ampl=0.0):
         self.alpha = alpha
         self.beta = beta
         self.tau = tau
         self.K = K
         self.L = L
         self.d0 = d0
+        self.lead_ampl = lead_ampl
 
-def eval_f(x, p, u=None):
+def eval_f(x, p, u=0.0):
     """
     Computes the dynamics function f(x, p) for a given state vector 
     x and parameters vector p.
@@ -34,7 +35,7 @@ def eval_f(x, p, u=None):
         
         # If this is the last car, it has no car in front of it
         if i == n - 1:
-            a_i = np.array([0.0])
+            a_i = np.array(p[i].lead_ampl * u)  # Lead car acceleration input
 
         # Else, follow the car in front
         else:

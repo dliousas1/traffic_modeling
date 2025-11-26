@@ -35,7 +35,7 @@ def test_evaluate_Jf_linear(p, expected_Jf):
     x0 = np.zeros(2 * n)
 
     # Evaluate the Jacobian using finite difference
-    Jf_fd, dxFD = eval_Jf_FiniteDifference(eval_f, x0.reshape(-1, 1), p, None)
+    Jf_fd, dxFD = eval_Jf_FiniteDifference(eval_f, x0.reshape(-1, 1), p, 0.0)
     assert np.allclose(Jf_fd, expected_Jf, atol=1e-5 )
 
 
@@ -64,5 +64,5 @@ def test_evaluate_Jf_nonlinear(p, expected_Jf):
     # Evaluate the Jacobian using finite difference
     n = len(p)
     x0 = np.zeros(2 * n)
-    Jf_fd, dxFD = eval_Jf_FiniteDifference(eval_f, x0.reshape(-1, 1), p, None)
+    Jf_fd, dxFD = eval_Jf_FiniteDifference(eval_f, x0.reshape(-1, 1), p, 0.0)
     assert np.allclose(Jf_fd, expected_Jf, atol=1e-5)

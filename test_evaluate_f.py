@@ -106,7 +106,7 @@ def test_evaluate_f_steady_state(p):
     x0 = np.zeros(2 * len(p))
     # Set leading car's initial velocity
     x0[-1] = 1.0  # Initial velocity of the leading car
-    x_ss, t_ss = SimpleSolver(eval_f, x0, p, lambda t: None, 10000, 0.01, visualize=False)
+    x_ss, t_ss = SimpleSolver(eval_f, x0, p, lambda t: 0, 10000, 0.01, visualize=False)
 
     # Calculate the position and velocity differences between successive cars at the final time step
     position_differences = [x_ss[2*i+2, -1] - x_ss[2*i, -1] for i in range(len(p)-1)]
