@@ -2,14 +2,14 @@ import numpy as np
 
 
 class Parameters:
-    def __init__(self, alpha, beta, tau, K, L, d0, lead_ampl=0.0):
+    def __init__(self, alpha, beta, tau, K, L, d0, input_ampl=0.0):
         self.alpha = alpha
         self.beta = beta
         self.tau = tau
         self.K = K
         self.L = L
         self.d0 = d0
-        self.lead_ampl = lead_ampl
+        self.input_ampl = input_ampl
 
 def eval_f(x, p, u=0.0):
     """
@@ -35,7 +35,7 @@ def eval_f(x, p, u=0.0):
         
         # If this is the last car, it has no car in front of it
         if i == n - 1:
-            a_i = np.array(p[i].lead_ampl * u)  # Lead car acceleration input
+            a_i = np.array([0.0])
 
         # Else, follow the car in front
         else:
@@ -46,6 +46,6 @@ def eval_f(x, p, u=0.0):
             a_i = (alpha_i/tau_i) * (z_j - z_i - K_i * np.exp(-L_i * (z_j - z_i - d0_i))) + beta_i * (v_j - v_i) - alpha_i * v_i
 
         f[2*i] = v_i.item()
-        f[2*i + 1] = a_i.item()
+        f[2*i + 1] = a_i.item() + p[i].input_ampl * u
 
     return f
