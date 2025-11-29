@@ -1,10 +1,10 @@
 import numpy as np
-from newtonNd import newtonNd
-from eval_f_BackwardEuler import eval_f_BackwardEuler
-from eval_f_Trapezoidal import eval_f_Trapezoidal
-from eval_Jf_BackwardEuler import eval_Jf_BackwardEuler
-from eval_Jf_Trapezoidal import eval_Jf_Trapezoidal
-from visualize_state import visualize_state
+from .newtonNd import newtonNd
+from .eval_f_BackwardEuler import eval_f_BackwardEuler
+from .eval_f_Trapezoidal import eval_f_Trapezoidal
+from .eval_Jf_BackwardEuler import eval_Jf_BackwardEuler
+from .eval_Jf_Trapezoidal import eval_Jf_Trapezoidal
+from .visualize_state import visualize_state
 import matplotlib.pyplot as plt
 
 def implicit(method, eval_f, x_start, p, eval_u, t_start, t_stop, timestep, visualize, FiniteDifference, eval_Jf=None):

@@ -11,7 +11,7 @@ class Parameters:
         self.d0 = d0
         self.input_ampl = input_ampl
 
-def eval_f(x, p, u=0.0):
+def eval_f(x, param_dict, u=0.0):
     """
     Computes the dynamics function f(x, p) for a given state vector 
     x and parameters vector p.
@@ -23,6 +23,8 @@ def eval_f(x, p, u=0.0):
     Outputs:
     f: numpy array of shape (2n,), dynamics function evaluated at x and p.
     """
+
+    p = param_dict['parameters']
     n = len(p)
     assert len(x) == 2 * n, "State vector x must have length 2 * number of cars (n)."
 

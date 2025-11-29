@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from visualize_state import visualize_state
+from .visualize_state import visualize_state
 
 def forward_euler(eval_f, x_start, p, eval_u, t_start, t_stop, timestep, visualize=False):
     """

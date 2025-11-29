@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from visualize_state import visualize_state 
-from eval_Jf_finiteDifference import eval_Jf_finiteDifference 
+from .visualize_state import visualize_state 
+from .eval_Jf_FiniteDifference import eval_Jf_FiniteDifference 
 
 def newtonNd(fhand, x0, p, u, errf, errDeltax, relDeltax, MaxIter, visualize, FiniteDifference, Jfhand):
     """
@@ -55,7 +55,7 @@ def newtonNd(fhand, x0, p, u, errf, errDeltax, relDeltax, MaxIter, visualize, Fi
     while k < MaxIter and (errf_k > errf or errDeltax_k > errDeltax or relDeltax_k > relDeltax):
 
         if FiniteDifference:
-            Jf,_ = eval_Jf_finiteDifference(fhand,X[:,k],p,u)
+            Jf,_ = eval_Jf_FiniteDifference(fhand,X[:,k],p,u)
         else: 
             Jf = Jfhand(X[:,k],p,u)
         
