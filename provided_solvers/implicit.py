@@ -5,9 +5,10 @@ from .eval_f_Trapezoidal import eval_f_Trapezoidal
 from .eval_Jf_BackwardEuler import eval_Jf_BackwardEuler
 from .eval_Jf_Trapezoidal import eval_Jf_Trapezoidal
 from .visualize_state import visualize_state
+from .newtonNdGCR import newtonNdGCR
 import matplotlib.pyplot as plt
 
-def implicit(method, eval_f, x_start, p, eval_u, t_start, t_stop, timestep, visualize, FiniteDifference, eval_Jf=None):
+def implicit(method, eval_f, x_start, p, eval_u, t_start, t_stop, timestep, visualize, FiniteDifference, eval_Jf=None, use_GCR=False):
     """
     Uses an Implicit ODE integration method 
     to simulate the state-space model dx/dt = f(x, p, u).
@@ -79,12 +80,21 @@ def implicit(method, eval_f, x_start, p, eval_u, t_start, t_stop, timestep, visu
         # Initial guess for Newton method
         x0 = X[-1]  # this is the easiest guess but could also use one step of Forward Euler
 
+        if use_GCR:
+            # Solve with Newton-GCR method
+            X_next, converged, errF_k, errDeltax_k, relDeltax_k, k_iter, _ = newtonNdGCR(
+                eval_f_implicit, x0, p, u_next, errf_implicit, errDeltax, relDeltax, MaxIter, visualize=False,
+                FiniteDifference=False,  jfhand=None, tolrGCR=1e-8, epsMF=1e-8
+            )
+        else:
+            # Solve with Newton method
+            X_next, converged, errF_k, errDeltax_k, relDeltax_k, k_iter, _ = newtonNd(
+                eval_f_implicit, x0, p, u_next, errf_implicit, errDeltax, relDeltax, MaxIter, visualize=False,
+                FiniteDifference=FiniteDifference, Jfhand=eval_Jf_implicit
+            )
 
-        # Solve with Newton method
-        X_next, converged, errF_k, errDeltax_k, relDeltax_k, k_iter, _ = newtonNd(
-            eval_f_implicit, x0, p, u_next, errf_implicit, errDeltax, relDeltax, MaxIter, visualize=False,
-            FiniteDifference=FiniteDifference, Jfhand=eval_Jf_implicit
-        )
+
+        
 
         if not converged:
             timestep /= 2  # Halve the timestep if Newton did not converge
