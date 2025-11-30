@@ -39,7 +39,9 @@ def tgcr_matrix_free(fhand, xf, pf, uf, b, tolrGCR, MaxItersGCR, epsMF):
         p = r.copy()
         epsilon=2*epsMF*np.sqrt(1+np.linalg.norm(xf,np.inf))/np.linalg.norm(p,np.inf) #NITSOL normal. great
         fepsMF  = fhand(xf+epsilon*p, pf, uf)
+        fepsMF = fepsMF[0] if isinstance(fepsMF, tuple) else fepsMF
         f0 = fhand(xf, pf, uf)
+        f0 = f0[0] if isinstance(f0, tuple) else f0
         Mp = (fepsMF - f0)/epsilon
         # Make the new Ap vector orthogonal to the previous Mp vectors,
         # and the p vectors M^TM orthogonal to the previous p vectors.        

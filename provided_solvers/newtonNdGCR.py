@@ -35,6 +35,8 @@ def newtonNdGCR(fhand, x0, p, u, errf, errDeltax, relDeltax, MaxIter, visualize,
     X[:, k] = x0
 
     f = fhand(X[:,k],p,u)
+    f = f[0] if isinstance(f, tuple) else f
+
     errf_k = np.linalg.norm(f, np.inf)
     errDeltax_k = np.inf
     relDeltax_k = np.inf
@@ -57,6 +59,8 @@ def newtonNdGCR(fhand, x0, p, u, errf, errDeltax, relDeltax, MaxIter, visualize,
         X[:,k+1] = X[:,k] + Deltax
         k = k+1
         f = fhand(X[:,k],p,u)
+        f = f[0] if isinstance(f, tuple) else f
+
         errf_k = np.linalg.norm(f, np.inf)
         errDeltax_k = np.linalg.norm(Deltax, np.inf)
         relDeltax_k = np.linalg.norm(Deltax,np.inf)/max(abs(X[:,k]))
