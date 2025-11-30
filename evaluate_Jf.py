@@ -4,7 +4,7 @@ from typing import Literal
 from evaluate_f import Parameters
 
 
-def eval_Jf_analytic_linear(p, order: Literal['alternate', 'position_first', 'velocity_first']='alternate') -> np.ndarray:
+def eval_Jf_analytic_linear(x, p, u, order: Literal['alternate', 'position_first', 'velocity_first']='alternate') -> np.ndarray:
     """
     evaluates the Jacobian analytically since the system is linear
 
@@ -13,7 +13,7 @@ def eval_Jf_analytic_linear(p, order: Literal['alternate', 'position_first', 've
     Outputs:
     Jf: numpy array of shape (2n, 2n), Jacobian of the dynamics function with parameters p.
     """
-    Jf = stamp_dynamics_linear(p, order=order)
+    Jf = stamp_dynamics_linear(p['parameters'], order=order)
     return Jf
 
 def stamp_dynamics_linear(
