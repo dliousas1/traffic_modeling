@@ -3,8 +3,9 @@ from .VisualizeState import VisualizeState
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation 
 from functools import partial
+import tqdm
 
-def SimpleSolver(eval_f, x_start, p, eval_u, NumIter, w=1, visualize=True, gif_file_name="State_visualization.gif"):
+def SimpleSolver(eval_f, x_start, p, eval_u, NumIter, w=1, visualize=True, use_tqdm=False, gif_file_name="State_visualization.gif"):
     """
     an extremely basic iterative algorithm 
     that can surprisingly potentially solve very different problems
@@ -51,7 +52,12 @@ def SimpleSolver(eval_f, x_start, p, eval_u, NumIter, w=1, visualize=True, gif_f
     X[:, 0] = np.reshape(x_start,[-1])
     t[0] = 0
 
-    for n in range(NumIter):
+    if use_tqdm:
+        iterator = tqdm.tqdm(range(NumIter))
+    else:
+        iterator = range(NumIter)
+
+    for n in iterator:
         t[n+1] = t[n] + w  # this is usefull only when solving ODEs or ADEs to help relating interation indeces to times
         u = eval_u(t[n])
         f = eval_f(np.reshape(X[:,n],[-1,1]), p, u)

@@ -25,13 +25,12 @@ def eval_Jf_FiniteDifference(eval_f, x0, p, u):
         # dxFD = 2 * np.sqrt(np.finfo(float).eps) * max(1, np.linalg.norm(x0, np.inf)) # similar correction for large ||x0||
         dxFD = 2 * np.sqrt(np.finfo(float).eps) * np.sqrt(1 + np.linalg.norm(x0, np.inf)) # used in the NITSOL solver
         # dxFD = 2 * np.sqrt(np.finfo(float).eps) * np.sqrt(max(1, np.linalg.norm(x0, np.inf))) # similar to NITSOL
-        print(f'dxFD not specified: using 2*sqrt(eps)*sqrt(1+||x||) = {dxFD}')
 
     Jf = np.zeros((len(f_x0), N))
 
     for k in range(N):
         xk = x0.copy()
-        xk[k,0] = x0[k,0] + dxFD
+        xk[k] = x0[k] + dxFD
         f_xk = eval_f(xk, p, u)
         Jf[:, k] = np.reshape((f_xk - f_x0) / dxFD,[-1])
 
