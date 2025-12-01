@@ -64,7 +64,7 @@ def test_evaluate_f_linear(x, p, expected_f):
     assert np.allclose(f, expected_f), f"Expected {expected_f}, but got {f}"
 
     # Also test using stamped dynamics
-    A = eval_Jf_analytic_linear(p)
+    A = eval_Jf_analytic_linear(x, param_dict, None)
     f_stamped = A @ x
     assert np.allclose(f, f_stamped), f"Stamped dynamics {f_stamped} do not match eval_f {f}"
 

@@ -34,11 +34,11 @@ def eval_f(x, param_dict, u=0.0):
     f = np.zeros(2 * n)
     for i in range(n):
         z_i, v_i = x[2*i], x[2*i + 1]
-        f[2*i] = v_i
+        f[2*i] = v_i.item()
 
         # If this is the last car, it has no car in front of it
         if i == n - 1:
-            f[2*i + 1] = np.array([0.0])
+            a_i = np.array([0.0])
 
         # Else, follow the car in front
         else:
@@ -46,8 +46,10 @@ def eval_f(x, param_dict, u=0.0):
             z_j, v_j = x[2*j], x[2*j + 1]
             alpha_i, beta_i, tau_i, K_i, L_i, d0_i = p[i].alpha, p[i].beta, p[i].tau, p[i].K, p[i].L, p[i].d0
 
-            f[2*i + 1] = (alpha_i/tau_i) * (z_j - z_i - K_i * np.exp(-L_i * (z_j - z_i - d0_i))) + beta_i * (v_j - v_i) - alpha_i * v_i
-            f[2*i + 1] += p[i].input_ampl * u
             a_i = (alpha_i/tau_i) * (z_j - z_i - K_i * np.exp(-L_i * (z_j - z_i - d0_i))) + beta_i * (v_j - v_i) - alpha_i * v_i
+        
+        f[2*i + 1] = a_i.item()
+        if u is not None:
+            f[2*i + 1] += p[i].input_ampl * u
 
     return f

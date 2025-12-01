@@ -1,7 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 from typing import Literal
-from our_solvers.newtonNd import newtonNd
+from provided_solvers.newtonNd import newtonNd
 
 def trapezoidal_adaptive(eval_f, x_start, p, eval_u, t_start, t_stop, initial_timestep,
                          atol=1e-4, rtol=1e-4,  # <-- NEW: Tolerances for adaptation
@@ -75,6 +75,7 @@ def trapezoidal_adaptive(eval_f, x_start, p, eval_u, t_start, t_stop, initial_ti
 
         # 3. Error Estimation (LTE based on Predictor-Corrector difference)
         # We calculate a weighted norm of the difference between Euler and Trap
+        # This is a scaled RMS error
         scale = atol + rtol * np.maximum(np.abs(x_curr), np.abs(x_next))
         error_norm = np.linalg.norm((x_next - x_pred) / scale) / np.sqrt(len(x_curr))
         

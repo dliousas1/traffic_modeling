@@ -18,6 +18,10 @@ lengths are on the order of meters.
 
 
 if __name__=="__main__":
+    # Turn off multithreading for consistent timing
+    os.environ["OMP_NUM_THREADS"] = "1"
+    os.environ["MKL_NUM_THREADS"] = "1"
+    
     # Set up a problem with N cars with varying parameters
     np.random.seed(42)
     num_cars = 300
@@ -38,6 +42,8 @@ if __name__=="__main__":
         d0 = np.random.normal(d0_mean, d0_std)
         parameters.append(Parameters(alpha, beta, tau, K, L, d0))
 
+    parameters = {"parameters": parameters}
+
     # Initial state: randomly initialize positions and velocities
     x0 = np.zeros(2 * num_cars)
     v_mean, v_std = 3.0, 2.0
@@ -49,7 +55,7 @@ if __name__=="__main__":
     
     # Time integration parameters
     t_start = 0.0
-    t_stop = 5.0
+    t_stop = 100.0
 
     # First, compute the golden reference
     golden_reference_timestep = 1e-4
@@ -138,7 +144,8 @@ if __name__=="__main__":
 
     # Find the delta t that gives us error below the acceptable error.
     simple_start_time = time.time()
-    simple_timestep = 2.5e-4
+    # simple_timestep = 2.8e-4
+    simple_timestep = 0.1
     simple_X, simple_t = SimpleSolver(
         eval_f, 
         x0, 
@@ -155,7 +162,7 @@ if __name__=="__main__":
     # Integrate using standard trapezoidal
     trap_start_time = time.time()
     trap_timestep = 0.5e-1
-    linear_Jf = eval_Jf_analytic_linear(parameters)
+    linear_Jf = eval_Jf_analytic_linear(x0, parameters, None)
     trap_X, trap_t = trapezoidal(
         eval_f=eval_f,
         x_start=x0,
@@ -177,7 +184,6 @@ if __name__=="__main__":
     trap_end_time = time.time()
 
     print(f"Standard trapezoidal integration completed in {trap_end_time - trap_start_time:.2f} seconds.")
-
 
     # Integrate using trapezoidal with solve_banded linear solver
     trap_banded_start_time = time.time()
@@ -266,23 +272,62 @@ if __name__=="__main__":
     simple_error = np.linalg.norm(simple_final - golden_final, np.inf)
 
     print(f"Golden reference confidence level: {confidence_golden:.6e}")
+    print(f"Acceptable forward euler max error at final time: {simple_error:.6e}")
     print(f"Standard trapezoidal max error at final time: {trap_error:.6e}")
     print(f"Solve_banded trapezoidal max error at final time: {trap_banded_error:.6e}")
     print(f"TGCR trapezoidal max error at final time: {trap_tgcr_error:.6e}")
     print(f"Adaptive trapezoidal max error at final time: {trap_adaptive_error:.6e}")
-    print(f"Acceptable forward euler max error at final time: {simple_error:.6e}")
 
-    # Plot the trajectories of the last 5 cars for all three methods
+    # Plot the trajectories of the last 5 cars for the golden reference.
     plt.figure(figsize=(12, 8))
     for i in range(num_cars-5, num_cars):
         plt.plot(t_golden, X_golden[2*i, :], label=f'Golden Car {i+1}', linestyle=':')
-        plt.plot(simple_t, simple_X[2*i, :], label=f'SimpleSolver Car {i+1}', linestyle='--')
-        plt.plot(trap_t, trap_X[2*i, :], label=f'Trapezoidal Car {i+1}', linestyle='-')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Position (m)')
+    plt.title('Trajectories of the last 5 cars - Golden Reference')
+    plt.legend()
+    plt.show()
+
+    # Plot the trajectories of the last 5 cars for the unstable forward euler.
+    plt.figure(figsize=(12, 8))
+    for i in range(num_cars-5, num_cars):
+        plt.plot(t_golden, X_golden[2*i, :], label=f'Golden Car {i+1}', linestyle=':')
+        plt.plot(unstable_euler_t, unstable_euler_X[2*i, :], label=f'Unstable Euler Car {i+1}', marker='x')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Position (m)')
+    plt.title('Trajectories of the last 5 cars - Unstable Forward Euler')
+    plt.legend()
+    plt.show()
+
+    # Plot the trajectories of the last 5 cars for acceptable forward euler.
+    plt.figure(figsize=(12, 8))
+    for i in range(num_cars-5, num_cars):
+        plt.plot(t_golden, X_golden[2*i, :], label=f'Golden Car {i+1}', linestyle=':')
+        plt.plot(simple_t, simple_X[2*i, :], label=f'Acceptable Euler Car {i+1}')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Position (m)')
+    plt.title('Trajectories of the last 5 cars - Acceptable Forward Euler')
+    plt.legend()
+    plt.show()
+
+    # Plot the trajectories of the last 5 cars for trapezoidal solve_banded and adaptive methods.
+    plt.figure(figsize=(12, 8))
+    for i in range(num_cars-5, num_cars):
+        plt.plot(t_golden, X_golden[2*i, :], label=f'Golden Car {i+1}', linestyle=':')
         plt.plot(trap_banded_t, trap_banded_X[2*i, :], label=f'Trapezoidal Solve_banded Car {i+1}', marker='o')
-        plt.plot(trap_tgcr_t, trap_tgcr_X[2*i, :], label=f'Trapezoidal TGCR Car {i+1}', marker='x')
         plt.plot(trap_adaptive_t, trap_adaptive_X[2*i, :], label=f'Trapezoidal Adaptive Car {i+1}', marker='s')
     plt.xlabel('Time (s)')
     plt.ylabel('Position (m)')
     plt.title('Trajectories of the last 5 cars')
     plt.legend()
+    plt.show()
+
+    # Plot the timestep history for the adaptive trapezoidal method
+    # Put a horizontal line at 0.05s, which is the fixed timestep used in other trapezoidal methods
+    plt.figure(figsize=(12, 6))
+    plt.plot(trap_adaptive_t[:-1], np.diff(trap_adaptive_t), marker='o')
+    plt.axhline(y=trap_timestep, color='r', linestyle='--', label='Fixed Timestep (0.05s)')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Timestep (s)')
+    plt.title('Adaptive Trapezoidal Method Timestep History')
     plt.show()

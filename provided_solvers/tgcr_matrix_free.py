@@ -82,8 +82,6 @@ def tgcr_matrix_free(fhand, xf, pf, uf, b, tolrGCR, MaxItersGCR, epsMF):
     if r_norms[-1] > tolrGCR * r_norms[0]:
         print('GCR NONCONVERGENCE!!!\n')
         x = None
-    # else:
-    #     print(f'GCR converged in {k+1} iterations')
 
     r_norms = np.array(r_norms) / r_norms[0]
     return x, r_norms

@@ -38,6 +38,5 @@ if __name__ == "__main__":
     for i in range(3):
         distance = x[2*i+2, -1] - x[2*i, -1]
         print(f"Final distance between car {i+1} and car {i+2}: {distance:.4f} m")
-        print(f"Expected final distance between car {i+1} and car {i+2}: {x[2*i+1, -1]*parameters[i].tau:.4f} m")
         print(f"Final velocity of car {i+1}: {x[2*i+1, -1]:.4f} m/s")
         print()

@@ -2,7 +2,8 @@ import numpy as np
 from tqdm import tqdm
 from typing import Literal
 
-from our_solvers.newtonNd import newtonNd
+from provided_solvers.newtonNd import newtonNd
+from provided_solvers.newtonNdGCR import newtonNdGCR
 
 
 def trapezoidal(eval_f, x_start, p, eval_u, t_start, t_stop, timestep,
@@ -66,20 +67,36 @@ def trapezoidal(eval_f, x_start, p, eval_u, t_start, t_stop, timestep,
         u_bundle = (x_n, f_n, h, t_n1)
 
         # Solve the nonlinear system
-        x_next, converged, errf_k, errDeltax_k, relDeltax_k, iterations, X_hist = newtonNd(
-            fhand=trap_residual,
-            x0=x0,
-            p=p,
-            u=u_bundle,
-            errf=errf,
-            errDeltax=errDeltax,
-            relDeltax=relDeltax,
-            MaxIter=MaxIter,
-            FiniteDifference=FiniteDifference,
-            Jfhand=trap_J_res if (Jf_eval_nonlinear is not None and Jf_linear is not None) else None ,
-            linearSolver=newton_linear_solver,
-            Jf_bandwidth=Jf_bandwidth
-        )
+        if newton_linear_solver == "tgcr":
+            x_next, converged, errf_k, errDeltax_k, relDeltax_k, iterations, X_hist = newtonNdGCR(
+                fhand=trap_residual,
+                x0=x0,
+                p=p,
+                u=u_bundle,
+                errf=errf,
+                errDeltax=errDeltax,
+                relDeltax=relDeltax,
+                MaxIter=MaxIter,
+                FiniteDifference=FiniteDifference,
+                jfhand=trap_J_res if (Jf_eval_nonlinear is not None and Jf_linear is not None) else None ,
+                tolrGCR=1e-8,
+                visualize=False
+            )
+        else:
+            x_next, converged, errf_k, errDeltax_k, relDeltax_k, iterations, X_hist = newtonNd(
+                fhand=trap_residual,
+                x0=x0,
+                p=p,
+                u=u_bundle,
+                errf=errf,
+                errDeltax=errDeltax,
+                relDeltax=relDeltax,
+                MaxIter=MaxIter,
+                FiniteDifference=FiniteDifference,
+                Jfhand=trap_J_res if (Jf_eval_nonlinear is not None and Jf_linear is not None) else None ,
+                linearSolver=newton_linear_solver,
+                Jf_bandwidth=Jf_bandwidth
+            )
 
         if not converged:
             print(f"Warning: Newton did not converge at step {n} (t={t_n} -> t={t_n1}). "

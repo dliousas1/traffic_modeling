@@ -72,8 +72,6 @@ def tgcr(M, b, tol, maxiters):
     if r_norms[k] > tol * r_norms[0]:
         print('GCR NONCONVERGENCE!!!\n')
         x = None
-    else:
-        print(f'GCR converged in {k+1} iterations')
 
     r_norms = np.array(r_norms) / r_norms[0]
     return x, r_norms

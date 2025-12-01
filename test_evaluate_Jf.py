@@ -27,7 +27,7 @@ def test_evaluate_Jf_linear(p, expected_Jf):
     the exponential braking term are 0.0).
     """
     # Evaluate the Jacobian analytically
-    Jf_analytic = eval_Jf_analytic_linear(p)
+    Jf_analytic = eval_Jf_analytic_linear(None, {"parameters": p}, None)
     assert np.allclose(Jf_analytic, expected_Jf), f"Analytic Jacobian does not match expected value."
 
     # Use a sample state vector x0

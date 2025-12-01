@@ -23,10 +23,12 @@ def conditioning_analysis(n, alpha, beta, tau, x0, u=None):
     """
     
     # Create parameters list
-    p = [Parameters(alpha, beta, tau) for _ in range(n)]
+    p = {
+        "parameters": [Parameters(alpha, beta, tau, 0, 0, 0, 0) for _ in range(n)]
+    }
     
     # Evaluate analytic Jacobian
-    Jf = eval_Jf_analytic_linear(p)
+    Jf = eval_Jf_analytic_linear(x0, p, u)
     
     # Extract the jacobian matrix for the n-1 cars that follow the lead car
     Jf = Jf[:2*(n-1), :2*(n-1)]
@@ -59,13 +61,15 @@ def conditioning_analysis_anomaly(n, alpha, beta, tau, x0, u=None, k_anomaly=0, 
     """
     
     # Create parameters list
-    p = [Parameters(alpha, beta, tau) for _ in range(n)]
+    p = {
+        "parameters": [Parameters(alpha, beta, tau, 0, 0, 0, 0) for _ in range(n)]
+    }
     
     # Introduce anomaly
-    p[k_anomaly] = Parameters(alpha_anomaly, beta_anomaly, tau_anomaly)
+    p["parameters"][k_anomaly] = Parameters(alpha_anomaly, beta_anomaly, tau_anomaly, 0, 0, 0, 0)
     
     # Evaluate analytic Jacobian
-    Jf = eval_Jf_analytic_linear(p)
+    Jf = eval_Jf_analytic_linear(x0, p, u)
     
     # Extract the jacobian matrix for the n-1 cars that follow the lead car
     Jf = Jf[:2*(n-1), :2*(n-1)]

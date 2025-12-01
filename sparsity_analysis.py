@@ -15,14 +15,16 @@ if __name__=="__main__":
         Parameters(
             np.random.uniform(0.5, 1.5), 
             np.random.uniform(0.5, 1.5), 
-            np.random.uniform(0.5, 1.5)
+            np.random.uniform(0.5, 1.5),
+            0, 0, 0
         ) for _ in range(num_cars)
     ]
+    parameters = {'parameters': parameters}
 
     # Compute the jacobian analytically
-    Jf_alternate = eval_Jf_analytic_linear(parameters, order="alternate")
-    Jf_position_first = eval_Jf_analytic_linear(parameters, order="position_first")
-    Jf_velocity_first = eval_Jf_analytic_linear(parameters, order="velocity_first")
+    Jf_alternate = eval_Jf_analytic_linear(None, parameters, None, order="alternate")
+    Jf_position_first = eval_Jf_analytic_linear(None, parameters, None, order="position_first")
+    Jf_velocity_first = eval_Jf_analytic_linear(None, parameters, None, order="velocity_first")
 
     # Remove rows associated with position of first car and position/velocity of last car,
     # because these cause singularities.

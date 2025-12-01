@@ -29,15 +29,15 @@ def eval_Jf_analytic_nonlinear(x, p, u) -> np.ndarray:
     Outputs:
     Jf: numpy array of shape (2n, 2n), Jacobian of the nonlinear dynamics at state x.
     """
-    Jf = stamp_dynamics_nonlinear(x, p)
+    Jf = stamp_dynamics_nonlinear(x, p['parameters'])
     return Jf
 
 def eval_Jf_analytic_total(x, p, u) -> np.ndarray:
     """
     evaluates the Jacobian analytically for the total dynamics (linear + nonlinear)
     """
-    Jf_linear = stamp_dynamics_linear(p)
-    Jf_nonlinear = stamp_dynamics_nonlinear(x, p)
+    Jf_linear = eval_Jf_analytic_linear(x, p, u)
+    Jf_nonlinear = eval_Jf_analytic_nonlinear(x, p, u)
     Jf_total = Jf_linear + Jf_nonlinear
     return Jf_total
 
