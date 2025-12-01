@@ -1,8 +1,8 @@
 import numpy as np
-from projection_matrix_modal import projection_matrix_modal
-from projection_matrix_pod import projection_matrix_pod
-
-def reduce_system(A, B, C, x_start, q, method):
+from .projection_matrix_modal import projection_matrix_modal
+from .projection_matrix_pod import projection_matrix_pod
+from icecream import ic
+def reduce_system(A, B, C, x_start, q, method, training_data=None):
     """
     Given a linear time-invariant system:
         dx/dt = A x(t) + B u(t)
@@ -23,7 +23,7 @@ def reduce_system(A, B, C, x_start, q, method):
     if method == 'MODAL':
         Vq = projection_matrix_modal(A, B, C, q)  # Use the previously defined function
     elif method == 'POD':
-        Vq = projection_matrix_pod(A, B, C, q)  # Use the previously defined function
+        Vq, extra_outputs = projection_matrix_pod(A, B, C, q, x_start, training_data=training_data)  # Use the previously defined function
     else:
         print("Method not available: returning system not reduced")
         Vq = np.eye(B.shape[0])  # Return an identity matrix (no reduction)
@@ -36,4 +36,4 @@ def reduce_system(A, B, C, x_start, q, method):
     # Compute the reduced initial state
     xr_start = Vq.T @ x_start
 
-    return Vq, Ar, Br, Cr, xr_start
+    return Vq, Ar, Br, Cr, xr_start, extra_outputs
