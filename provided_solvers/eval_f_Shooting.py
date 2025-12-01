@@ -39,10 +39,12 @@ def eval_f_Shooting(x0, p, NotUsed=None):
     # X, t = implicit('BackwardEuler', p['eval_f'], x0, p, p['eval_u'], t_start, t_stop, p['dt'], visualize, FiniteDifference, p['eval_Jf'])
     X, t, _ = implicit('Trapezoidal', p['eval_f'], x0, copy.deepcopy(p), p['eval_u'], t_start, t_stop, p['dt'], visualize, FiniteDifference, eval_Jf=p['eval_Jf'], use_GCR=False)
 
+    pos_lead = x0[-2] + x0[-1] * t
+
     # Convert to relative positions and velocities between consecutive cars
     positions = X[0::2, :]
     # Relative positions to last car
-    positions_rel = positions - positions[-1, :]
+    positions_rel = positions - pos_lead
     X[0::2, :] = positions_rel
 
     # Do same for initial guess
