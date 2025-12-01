@@ -5,7 +5,8 @@ from evaluate_f import eval_f, Parameters
 
 if __name__ == "__main__":
     parameters = [Parameters(1.0, 1.0, 1.0, 1.0, 1.0, 1.0), Parameters(1.0, 1.0, 1.5, 1.0, 1.0, 1.0), Parameters(1.0, 1.0, 2.0, 1.0, 1.0, 1.0), Parameters(1.0, 1.0, 1.0, 1.0, 1.0, 1.0)]
-    x, t = SimpleSolver(eval_f, [0.0, 1.0, 10.0, 1.0, 14.0, 3.5, 15.2, 0.5], parameters, lambda t: None, 10000, 0.01, visualize=False)
+    param_dict = {"parameters": parameters, "dxFD":1e-8}
+    x, t = SimpleSolver(eval_f, [0.0, 1.0, 10.0, 1.0, 14.0, 3.5, 15.2, 0.5], param_dict, lambda t: 0.0, 10000, 0.01, visualize=False)
     
     # Plot the results on subplots
     fig, axs = plt.subplots(2, 1, figsize=(10, 8))

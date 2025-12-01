@@ -11,11 +11,15 @@ def eval_Jf_FiniteDifference(eval_f, x0, p, u):
     If p.dxFD is NOT specified, uses NITSOL value p.dxFD = 2 * sqrt(eps) * max(1, norm(x)).
 
     EXAMPLES:
-    Jf        = eval_Jf_FiniteDifference(eval_f,x0,p,u);
-    [Jf,dxFD] = eval_Jf_FiniteDifference(eval_f,x0,p,u);
+    Jf        = eval_Jf_finiteDifference(eval_f,x0,p,u);
+    [Jf,dxFD] = eval_Jf_finiteDifference(eval_f,x0,p,u);
     """
-    N = len(x0)    
-    f_x0 = eval_f(x0, p, u)
+    
+    if np.isscalar(x0):
+        x0 = np.array([x0])
+
+    N = len(x0)   
+    f_x0 = eval_f(x0, p, u)[0] if isinstance(eval_f(x0, p, u), tuple) else eval_f(x0, p, u)
 
     if 'dxFD' in p:
         dxFD = p['dxFD']  # If user specified it, use that
@@ -31,7 +35,7 @@ def eval_Jf_FiniteDifference(eval_f, x0, p, u):
     for k in range(N):
         xk = x0.copy()
         xk[k] = x0[k] + dxFD
-        f_xk = eval_f(xk, p, u)
+        f_xk = eval_f(xk, p, u)[0] if isinstance(eval_f(xk, p, u), tuple) else eval_f(xk, p, u)
         Jf[:, k] = np.reshape((f_xk - f_x0) / dxFD,[-1])
 
     return Jf, dxFD

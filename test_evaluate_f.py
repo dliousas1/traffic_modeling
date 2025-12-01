@@ -58,8 +58,9 @@ def test_evaluate_f_linear(x, p, expected_f):
     Test that eval_f computes the correct dynamics function when the system is linear 
     (i.e. the coefficients in the exponential braking term are 0.0).
     """
+    param_dict = {"parameters": p, "dxFD":1e-8}
     # x_vector = np.array([item for state in x for item in (state.position, state.velocity)])
-    f = eval_f(x, p)
+    f = eval_f(x, param_dict)
     assert np.allclose(f, expected_f), f"Expected {expected_f}, but got {f}"
 
     # Also test using stamped dynamics
@@ -90,7 +91,8 @@ def test_evaluate_f_nonlinear(x, p, expected_f):
     Test that eval_f computes the correct dynamics function when the system is nonlinear 
     (i.e. the coefficients in the exponential braking term are non-zero).
     """
-    f = eval_f(x, p)
+    param_dict = {"parameters": p, "dxFD":1e-8}
+    f = eval_f(x, param_dict)
     assert np.allclose(f, expected_f), f"Expected {expected_f}, but got {f}"
 
 @pytest.mark.parametrize("p", [
@@ -101,12 +103,12 @@ def test_evaluate_f_steady_state(p):
     """
     Test that eval_f after running for many iterations results in the position and velocity differences between successive cars is equal to the expected analytical steady state value.
     """
-
+    param_dict = {"parameters": p, "dxFD":1e-8}
     # Set arbitrary initial conditions (all zeros)
     x0 = np.zeros(2 * len(p))
     # Set leading car's initial velocity
     x0[-1] = 1.0  # Initial velocity of the leading car
-    x_ss, t_ss = SimpleSolver(eval_f, x0, p, lambda t: None, 10000, 0.01, visualize=False)
+    x_ss, t_ss = SimpleSolver(eval_f, x0, param_dict, lambda t: 0, 10000, 0.01, visualize=False)
 
     # Calculate the position and velocity differences between successive cars at the final time step
     position_differences = [x_ss[2*i+2, -1] - x_ss[2*i, -1] for i in range(len(p)-1)]
