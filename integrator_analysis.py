@@ -60,7 +60,7 @@ if __name__=="__main__":
     # First, compute the golden reference
     golden_reference_timestep = 1e-4
 
-    if not os.path.exists("references/golden_reference.npz"):
+    if not os.path.exists("references/golden_reference_integrator_analysis.npz"):
         print("Computing golden reference solution...")
         
         # Simulate golden reference

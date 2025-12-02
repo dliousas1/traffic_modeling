@@ -42,7 +42,7 @@ def trapezoidal(eval_f, x_start, p, eval_u, t_start, t_stop, timestep,
     def trap_J_res(x_next, p_local, u_bundle):
         _, _, h_local, t_n1 = u_bundle
         u_n1 = eval_u(t_n1)
-        Jf = Jf_eval_nonlinear(x_next, p_local, u_n1) + Jf_linear
+        Jf = Jf_eval_nonlinear(x_next, p_local, u_n1) + Jf_linear if Jf_eval_nonlinear is not None else Jf_linear
         return I_n - 0.5 * h_local * Jf
 
     # time-stepping loop
@@ -78,7 +78,7 @@ def trapezoidal(eval_f, x_start, p, eval_u, t_start, t_stop, timestep,
                 relDeltax=relDeltax,
                 MaxIter=MaxIter,
                 FiniteDifference=FiniteDifference,
-                jfhand=trap_J_res if (Jf_eval_nonlinear is not None and Jf_linear is not None) else None ,
+                jfhand=trap_J_res,
                 tolrGCR=1e-8,
                 visualize=False
             )
@@ -93,7 +93,7 @@ def trapezoidal(eval_f, x_start, p, eval_u, t_start, t_stop, timestep,
                 relDeltax=relDeltax,
                 MaxIter=MaxIter,
                 FiniteDifference=FiniteDifference,
-                Jfhand=trap_J_res if (Jf_eval_nonlinear is not None and Jf_linear is not None) else None ,
+                Jfhand=trap_J_res,
                 linearSolver=newton_linear_solver,
                 Jf_bandwidth=Jf_bandwidth
             )
