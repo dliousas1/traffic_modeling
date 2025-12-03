@@ -79,18 +79,16 @@ if __name__ == "__main__":
         positions_rel = positions - lead_pos[np.newaxis, :]
         return positions_rel
     
-    def compute_total_acceleration(X, t):
-        """
-        Compute the total acceleration experienced by all cars at each time step.
-        X: state matrix of shape (states, times)
-        t: time vector of shape (times,)
-        Returns: total_acceleration: array of shape (times,)
-        """
-        accelerations = np.zeros_like(X)
-        for i in range(1, X.shape[1]):
+    def compute_total_accel(velocities, t):
+        accelerations = np.zeros_like(velocities)
+        for i in range(1, velocities.shape[1]):
             dt_sim = t[i] - t[i - 1]
-            accelerations[:, i] = (X[:, i] - X[:, i - 1]) / dt_sim
-        return np.sum(np.abs(accelerations), axis=0)
+            accelerations[:, i] = (velocities[:, i] - velocities[:, i - 1]) / dt_sim
+
+        accelerations = np.sum(np.abs(accelerations), axis=0)
+        accel_integral = np.trapezoid(accelerations, t)
+
+        return accelerations, accel_integral
 
     X_ref_rel = get_relative_position_states(X_training_ref)
     X_rel = get_relative_position_states(X_training)
@@ -101,7 +99,7 @@ if __name__ == "__main__":
     time_steps = np.arange(t_start, t_stop + dt/2, dt)
 
     accel_dict = {}
-    accel_dict["Full Model"] = compute_total_acceleration(X_training, time_steps)
+    accel_dict["Full Model"], _ = compute_total_accel(X_training[1::2, :], time_steps)
 
     # Compute the max absolute difference in the final time step
     # Find index where ref time matches 100 seconds
@@ -158,7 +156,7 @@ if __name__ == "__main__":
         print(f"Max absolute difference in final time step for q={q}: {max_abs_diff_approx:.6e}")
 
         # Compute total acceleration for reduced model
-        accel_approx = compute_total_acceleration(X_full_approx, time_steps)
+        accel_approx, _ = compute_total_accel(X_full_approx[1::2, :], time_steps)
         accel_dict[f"q={q}"] = accel_approx
 
     # Plot training data results
