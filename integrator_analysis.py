@@ -240,6 +240,7 @@ if __name__=="__main__":
         t_start=t_start,
         t_stop=t_stop,
         initial_timestep=trap_timestep,
+        min_step_size=trap_timestep,
         errf=1e-8,
         errDeltax=1e-8,
         relDeltax=1e-8,
@@ -248,6 +249,7 @@ if __name__=="__main__":
         Jf_eval=eval_Jf,
         use_tqdm=True,
         newton_linear_solver="solve_banded",
+        return_full_traj=True,
         Jf_bandwidth=(1, 2),
     )
     trap_adaptive_end_time = time.time()

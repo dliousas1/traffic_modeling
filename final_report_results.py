@@ -2,8 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 from typing import Literal
+import os
 
 from our_solvers.trapezoidal_adaptive import trapezoidal_adaptive
+from our_solvers.trapezoidal import trapezoidal
+from provided_solvers.SimpleSolver import SimpleSolver
 from evaluate_f import eval_f, Parameters
 from evaluate_Jf import eval_Jf
 from animate_traffic import animate_traffic
@@ -327,6 +330,153 @@ def perform_complexity_analysis():
     plt.grid()
     plt.show()
 
+def demo_adaptive_timestepper():
+    os.environ["OMP_NUM_THREADS"] = "1"
+    os.environ["MKL_NUM_THREADS"] = "1"
+
+    # Define the number of cars in the example
+    n_cars = 50
+
+    np.random.seed(42)
+    alpha_mean, alpha_std = 1.0, 0.1
+    beta_mean, beta_std = 1.0, 0.1
+    tau_mean, tau_std = 1.0, 0.2
+    K_mean, K_std = 1.0, 0.5
+    L_mean, L_std = 0.5, 0.1
+    d0_mean, d0_std = 2.0, 0.5
+
+    parameters = []
+    for i in range(n_cars):
+        alpha = np.random.normal(alpha_mean, alpha_std)
+        beta = np.random.normal(beta_mean, beta_std)
+        tau = np.random.normal(tau_mean, tau_std)
+        K = np.random.normal(K_mean, K_std)
+        L = np.random.normal(L_mean, L_std)
+        d0 = np.random.normal(d0_mean, d0_std)
+        parameters.append(Parameters(alpha, beta, tau, K, L, d0))
+
+    param_dict = {"parameters": parameters}
+
+    # Initial state: randomly initialize positions and velocities
+    x0 = np.zeros(2 * n_cars)
+    v_mean, v_std = 3.0, 2.0
+    d_mean, d_std = 10.0, 3.0
+
+    for i in range(n_cars):
+        x0[2*i] = np.clip(np.random.normal(d_mean, d_std), 0, None) + x0[2*(i-1)] if i > 0 else 0  # position
+        x0[2*i + 1] = np.clip(np.random.normal(v_mean, v_std), 0, None)  # velocity
+
+    # Simulation parameters
+    t0 = 0.0
+    tf = 100.0
+    rtol = 1e-6
+    atol = 1e-8
+    errf = 1e-8
+
+    # Get a "golden" solution for reference
+    ref_path = "references/golden_solution_adaptive_demo.npz"
+    
+    if not os.path.exists(ref_path):
+        x_gold, t_gold = SimpleSolver(
+            eval_f=eval_f,
+            x_start=x0,
+            p=param_dict,
+            eval_u=lambda t: 0.0,
+            NumIter=int((tf - t0) / 0.0001),
+            w = 0.0001,
+            use_tqdm=True,
+            visualize=False,
+        )
+        np.savez(ref_path, x_gold=x_gold, t_gold=t_gold)
+    else:
+        data = np.load(ref_path)
+        x_gold = data['x_gold']
+        t_gold = data['t_gold']
+
+    fixed_dt = 0.05
+
+    # Time to run adaptive vs fixed timestepper
+
+    start = time.time()
+    # Run the simulation using the trapezoidal adaptive solver
+    x_adaptive, t_adaptive = trapezoidal_adaptive(
+        eval_f=eval_f,
+        x_start=x0,
+        p=param_dict,
+        eval_u=lambda t: 0.0,
+        t_start=t0,
+        t_stop=tf,
+        initial_timestep=fixed_dt,
+        min_step_size=fixed_dt,
+        errf=errf,
+        errDeltax=atol,
+        relDeltax=rtol,
+        MaxIter=100000,
+        FiniteDifference=0,
+        Jf_eval=eval_Jf,
+        use_tqdm=True,
+        newton_linear_solver="solve_banded",
+        Jf_bandwidth=(1, 2),
+        return_full_traj=True,
+    )
+    end = time.time()
+    print(f"Adaptive Timestepper Time: {end - start:.2f} seconds")
+
+    start = time.time()
+    # Run the simulation using the fixed timestep trapezoidal solver
+    x_fixed, t_fixed = trapezoidal(
+        eval_f=eval_f,
+        x_start=x0,
+        p=param_dict,
+        eval_u=lambda t: 0.0,
+        t_start=t0,
+        t_stop=tf,
+        timestep=fixed_dt,
+        MaxIter=100000,
+        FiniteDifference=0,
+        Jf_eval=eval_Jf,
+        newton_linear_solver="solve_banded",
+        Jf_bandwidth=(1, 2),
+        use_tqdm=True,
+    )
+    end = time.time()
+    print(f"Fixed Timestepper Time: {end - start:.2f} seconds")
+
+    # Plot the timesteps taken by each method
+    plt.figure(figsize=(10, 6))
+    plt.plot(t_adaptive[:-1], np.diff(t_adaptive), label='Adaptive Timestepper', marker='o')
+    plt.hlines(fixed_dt, t0, tf, colors='r', linestyles='--', label='Fixed Timestep')
+    plt.title('Timestep Comparison: Adaptive vs Fixed')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Timestep Size (s)')
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    # Plot the positions of the cars over time for both methods
+    plt.figure(figsize=(12, 6))
+    for i in range(n_cars):
+        plt.plot(t_adaptive, x_adaptive[2*i, :], label=f'Car {i+1} Position (Adaptive)', linestyle='-')
+        plt.plot(t_fixed, x_fixed[2*i, :], label=f'Car {i+1} Position (Fixed)', linestyle='--')
+    plt.title('Traffic Flow Simulation: Car Positions Over Time')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Position (m)')
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    # Compute and print maximum error from golden solution at final time
+    gold_final = x_gold[:, -1]
+    adaptive_final = x_adaptive[:, -1]
+    fixed_final = x_fixed[:, -1]
+
+    adaptive_error = np.linalg.norm(adaptive_final - gold_final, np.inf)
+    fixed_error = np.linalg.norm(fixed_final - gold_final, np.inf)
+    
+    print(f'Maximum Error at Final Time:')
+    print(f'Adaptive Timestepper Error: {adaptive_error:.6e}')
+    print(f'Fixed Timestepper Error: {fixed_error:.6e}')
+
 
 if __name__ == "__main__":
     # simulate_phantom_jam("all unsafe", animate=True)
@@ -334,4 +484,5 @@ if __name__ == "__main__":
     # simulate_phantom_jam("one safe", animate=True)
     # sweep_safety_parameter()
     # perform_complexity_analysis()
+    demo_adaptive_timestepper()
     pass
