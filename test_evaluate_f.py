@@ -3,7 +3,7 @@ import numpy as np
 
 from evaluate_f import Parameters, eval_f
 from provided_solvers.SimpleSolver import SimpleSolver
-from evaluate_Jf import eval_Jf_analytic_linear
+from evaluate_Jf import eval_Jf
 
 @pytest.mark.parametrize("x, p, expected_f", [
     # Test case 1: One car
@@ -64,7 +64,7 @@ def test_evaluate_f_linear(x, p, expected_f):
     assert np.allclose(f, expected_f), f"Expected {expected_f}, but got {f}"
 
     # Also test using stamped dynamics
-    A = eval_Jf_analytic_linear(x, param_dict, None)
+    A = eval_Jf(x, param_dict, None)
     f_stamped = A @ x
     assert np.allclose(f, f_stamped), f"Stamped dynamics {f_stamped} do not match eval_f {f}"
 

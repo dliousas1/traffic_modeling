@@ -6,7 +6,7 @@ from our_solvers.trapezoidal import trapezoidal
 from our_solvers.trapezoidal_adaptive import trapezoidal_adaptive
 from provided_solvers.SimpleSolver import SimpleSolver
 from evaluate_f import eval_f, Parameters
-from evaluate_Jf import eval_Jf_analytic_linear, eval_Jf_analytic_nonlinear
+from evaluate_Jf import eval_Jf
 import os
 
 ACCEPTABLE_ERROR = 1e-3
@@ -55,7 +55,7 @@ if __name__=="__main__":
     
     # Time integration parameters
     t_start = 0.0
-    t_stop = 100.0
+    t_stop = 1.0
 
     # First, compute the golden reference
     golden_reference_timestep = 1e-4
@@ -96,7 +96,7 @@ if __name__=="__main__":
 
         # Save golden reference to disk for reuse
         base_dir = os.path.dirname(__file__)
-        golden_path = os.path.join(base_dir, "references/golden_reference.npz")
+        golden_path = os.path.join(base_dir, "references/golden_reference_integrator_analysis.npz")
 
         np.savez_compressed(
             golden_path,
@@ -116,7 +116,7 @@ if __name__=="__main__":
             base_dir = os.path.dirname(__file__)
         except NameError:
             base_dir = os.getcwd()
-        golden_path = os.path.join(base_dir, "references/golden_reference.npz")
+        golden_path = os.path.join(base_dir, "references/golden_reference_integrator_analysis.npz")
 
         data = np.load(golden_path)
         X_golden = data['X_golden']
@@ -162,7 +162,6 @@ if __name__=="__main__":
     # Integrate using standard trapezoidal
     trap_start_time = time.time()
     trap_timestep = 0.5e-1
-    linear_Jf = eval_Jf_analytic_linear(x0, parameters, None)
     trap_X, trap_t = trapezoidal(
         eval_f=eval_f,
         x_start=x0,
@@ -176,8 +175,7 @@ if __name__=="__main__":
         relDeltax=1e-8,
         MaxIter=50,
         FiniteDifference=0,
-        Jf_linear=linear_Jf,
-        Jf_eval_nonlinear=eval_Jf_analytic_nonlinear,
+        Jf_eval=eval_Jf,
         use_tqdm=True,
         newton_linear_solver="LU",
     )
@@ -200,8 +198,7 @@ if __name__=="__main__":
         relDeltax=1e-8,
         MaxIter=50,
         FiniteDifference=0,
-        Jf_linear=linear_Jf,
-        Jf_eval_nonlinear=eval_Jf_analytic_nonlinear,
+        Jf_eval=eval_Jf,
         use_tqdm=True,
         newton_linear_solver="solve_banded",
         Jf_bandwidth=(1, 2),
@@ -225,8 +222,7 @@ if __name__=="__main__":
         relDeltax=1e-8,
         MaxIter=50,
         FiniteDifference=0,
-        Jf_linear=linear_Jf,
-        Jf_eval_nonlinear=eval_Jf_analytic_nonlinear,
+        Jf_eval=eval_Jf,
         use_tqdm=True,
         newton_linear_solver="tgcr",
     )
@@ -249,8 +245,7 @@ if __name__=="__main__":
         relDeltax=1e-8,
         MaxIter=50,
         FiniteDifference=0,
-        Jf_linear=linear_Jf,
-        Jf_eval_nonlinear=eval_Jf_analytic_nonlinear,
+        Jf_eval=eval_Jf,
         use_tqdm=True,
         newton_linear_solver="solve_banded",
         Jf_bandwidth=(1, 2),

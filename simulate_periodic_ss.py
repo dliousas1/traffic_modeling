@@ -4,7 +4,7 @@ from provided_solvers import forward_euler, implicit, shooting_Newton
 from provided_solvers.eval_u_cos import gen_eval_u_cos
 
 from evaluate_f import eval_f, Parameters
-from evaluate_Jf import eval_Jf_analytic_linear as eval_Jf
+from evaluate_Jf import eval_Jf
 from icecream import ic
 from datetime import datetime
 import numpy as np

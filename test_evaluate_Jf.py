@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 from evaluate_f import Parameters, eval_f
-from evaluate_Jf import eval_Jf_analytic_linear
+from evaluate_Jf import eval_Jf
 from provided_solvers.eval_Jf_FiniteDifference import eval_Jf_FiniteDifference
 
 @pytest.mark.parametrize("p, expected_Jf", [
@@ -22,12 +22,12 @@ from provided_solvers.eval_Jf_FiniteDifference import eval_Jf_FiniteDifference
 ])
 def test_evaluate_Jf_linear(p, expected_Jf):
     """
-    Test that eval_Jf_analytic_linear and eval_Jf_FiniteDifference compute the 
+    Test that eval_Jf and eval_Jf_FiniteDifference compute the 
     correct Jacobian when the system is linear (i.e. the coefficients in
     the exponential braking term are 0.0).
     """
     # Evaluate the Jacobian analytically
-    Jf_analytic = eval_Jf_analytic_linear(None, {"parameters": p}, None)
+    Jf_analytic = eval_Jf(None, {"parameters": p}, None)
     assert np.allclose(Jf_analytic, expected_Jf), f"Analytic Jacobian does not match expected value."
 
     # Use a sample state vector x0
@@ -58,7 +58,7 @@ def test_evaluate_Jf_linear(p, expected_Jf):
 ])
 def test_evaluate_Jf_nonlinear(p, expected_Jf):
     """
-    Test that eval_Jf_analytic_linear matches the expected Jacobian when
+    Test that eval_Jf matches the expected Jacobian when
     the system is nonlinear (i.e. the coefficients in the exponential braking 
     term are non-zero).
     """

@@ -8,7 +8,7 @@ from provided_solvers.newtonNdGCR import newtonNdGCR
 
 def trapezoidal(eval_f, x_start, p, eval_u, t_start, t_stop, timestep,
                 errf=1e-8, errDeltax=1e-8, relDeltax=1e-8, MaxIter=30,
-                FiniteDifference=1, Jf_linear=None, Jf_eval_nonlinear=None, use_tqdm=False, 
+                FiniteDifference=1, Jf_eval=None, use_tqdm=False, 
                 newton_linear_solver: Literal["LU", "solve_banded", "tgcr"] = "LU", Jf_bandwidth = None):
     """
     Fully implicit trapezoidal integrator using newtonNd. Adapted for our system
@@ -42,7 +42,7 @@ def trapezoidal(eval_f, x_start, p, eval_u, t_start, t_stop, timestep,
     def trap_J_res(x_next, p_local, u_bundle):
         _, _, h_local, t_n1 = u_bundle
         u_n1 = eval_u(t_n1)
-        Jf = Jf_eval_nonlinear(x_next, p_local, u_n1) + Jf_linear if Jf_eval_nonlinear is not None else Jf_linear
+        Jf = Jf_eval(x_next, p_local, u_n1) if Jf_eval is not None else None
         return I_n - 0.5 * h_local * Jf
 
     # time-stepping loop

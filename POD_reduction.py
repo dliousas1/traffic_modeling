@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from evaluate_f import Parameters
-from evaluate_Jf import eval_Jf_analytic_linear as eval_Jf
+from evaluate_Jf import eval_Jf
 from provided_solvers.reduce_system import reduce_system
 from provided_solvers.eval_f_LinearSystem import eval_f_LinearSystem
 from provided_solvers.eval_Jf_LinearSystem import eval_Jf_LinearSystem

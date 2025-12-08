@@ -6,7 +6,7 @@ from scipy.linalg import schur, eigvals
 import tracemalloc
 
 from evaluate_f import Parameters, eval_f
-from evaluate_Jf import eval_Jf_analytic_linear
+from evaluate_Jf import eval_Jf
 from our_solvers.trapezoidal import trapezoidal
 from provided_solvers.SimpleSolver import SimpleSolver
 
@@ -97,7 +97,7 @@ def perform_eigmode_truncation_reduction(seed):
     print("Generating Full System Matrices...")
     tracemalloc.start()
     start = time.time()
-    A = eval_Jf_analytic_linear(x0, param_dict, n_cars)
+    A = eval_Jf(x0, param_dict, n_cars)
     B = np.zeros((n_states,))
     B[-1] = 5.0
     C_full = A[1::2, :]
@@ -190,7 +190,7 @@ def perform_eigmode_truncation_reduction(seed):
         x_start=x0, p=param_dict, eval_u=eval_u,
         t_start=t_start, t_stop=t_stop, timestep=0.005,
         errf=1e-8, errDeltax=1e-8, relDeltax=1e-8, MaxIter=50, FiniteDifference=0,
-        Jf_linear=A, Jf_eval_nonlinear=None, use_tqdm=True, 
+        Jf_eval=A, use_tqdm=True, 
         newton_linear_solver="LU"
     )
     y_full, integral_full = compute_total_accel(x_full[1::2, :], t_full)
@@ -227,7 +227,7 @@ def perform_eigmode_truncation_reduction(seed):
             x_start=x0_eig, p=param_dict, eval_u=eval_u,
             t_start=t_start, t_stop=t_stop, timestep=0.005,
             errf=1e-8, errDeltax=1e-8, relDeltax=1e-8, MaxIter=50, FiniteDifference=0,
-            Jf_linear=A_eig, Jf_eval_nonlinear=None, use_tqdm=False, 
+            Jf_eval=A_eig, use_tqdm=False, 
             newton_linear_solver="LU"
         )
         end = time.time()

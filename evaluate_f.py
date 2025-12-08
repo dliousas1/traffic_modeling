@@ -48,8 +48,12 @@ def eval_f(x, param_dict, u=0.0):
 
             a_i = (alpha_i/tau_i) * (z_j - z_i - K_i * np.exp(-L_i * (z_j - z_i - d0_i))) + beta_i * (v_j - v_i) - alpha_i * v_i
         
-        f[2*i + 1] = a_i.item()
         if u is not None:
-            f[2*i + 1] += p[i].input_ampl * u
+            a_i += p[i].input_ampl * u
+
+        if a_i < 0:
+            a_i = a_i * np.tanh(max(v_i, 0) / 1e-1)
+
+        f[2*i + 1] = a_i
 
     return f

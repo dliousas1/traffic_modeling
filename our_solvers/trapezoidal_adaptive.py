@@ -4,9 +4,8 @@ from typing import Literal
 from provided_solvers.newtonNd import newtonNd
 
 def trapezoidal_adaptive(eval_f, x_start, p, eval_u, t_start, t_stop, initial_timestep,
-                         atol=1e-4, rtol=1e-4,  # <-- NEW: Tolerances for adaptation
                          errf=1e-8, errDeltax=1e-8, relDeltax=1e-8, MaxIter=30,
-                         FiniteDifference=1, Jf_linear=None, Jf_eval_nonlinear=None, use_tqdm=False, 
+                         FiniteDifference=1, Jf_eval=None, use_tqdm=False, 
                          min_step_size=0.05,
                          newton_linear_solver: Literal["LU", "solve_banded", "tgcr"] = "LU", Jf_bandwidth = None):
     """
@@ -37,7 +36,7 @@ def trapezoidal_adaptive(eval_f, x_start, p, eval_u, t_start, t_stop, initial_ti
     def trap_J_res(x_next, p_local, u_bundle):
         _, _, h_local, t_n1 = u_bundle
         u_n1 = eval_u(t_n1)
-        Jf = Jf_eval_nonlinear(x_next, p_local, u_n1) + Jf_linear if Jf_eval_nonlinear is not None else Jf_linear
+        Jf = Jf_eval(x_next, p_local, u_n1) if Jf_eval is not None else None
         return I_n - 0.5 * h_local * Jf
 
     pbar = tqdm(total=t_stop - t_start) if use_tqdm else None
@@ -76,7 +75,7 @@ def trapezoidal_adaptive(eval_f, x_start, p, eval_u, t_start, t_stop, initial_ti
         # 3. Error Estimation (LTE based on Predictor-Corrector difference)
         # We calculate a weighted norm of the difference between Euler and Trap
         # This is a scaled RMS error
-        scale = atol + rtol * np.maximum(np.abs(x_curr), np.abs(x_next))
+        scale = errDeltax + relDeltax * np.maximum(np.abs(x_curr), np.abs(x_next))
         error_norm = np.linalg.norm((x_next - x_pred) / scale) / np.sqrt(len(x_curr))
         
         # 4. Controller Logic
@@ -88,9 +87,11 @@ def trapezoidal_adaptive(eval_f, x_start, p, eval_u, t_start, t_stop, initial_ti
             # === ACCEPT STEP ===
             t_curr = t_next_candidate
             x_curr = x_next
-            
-            X_list.append(x_curr)
-            t_list.append(t_curr)
+
+            # Only log every 0.1 time units to reduce memory usage
+            if t_curr - t_list[-1] >= 0.1:
+                X_list.append(x_curr)
+                t_list.append(t_curr)
             
             if pbar: pbar.update(h)
 
