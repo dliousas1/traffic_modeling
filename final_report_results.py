@@ -109,7 +109,7 @@ def simulate_phantom_jam(driver_type: Literal["all unsafe", "all safe", "one saf
     plt.title('Traffic Flow Simulation: Car Positions Over Time')
     plt.xlabel('Time (s)')
     plt.ylabel('Position (m)')
-    plt.legend()
+    plt.legend(loc="lower right")
     plt.grid()
 
     # Plot the velocities of the cars over time
@@ -477,8 +477,15 @@ def demo_adaptive_timestepper():
     print(f'Adaptive Timestepper Error: {adaptive_error:.6e}')
     print(f'Fixed Timestepper Error: {fixed_error:.6e}')
 
+def set_default_plot_params():
+    plt.rcParams['font.size'] = 12
+    plt.rcParams['axes.labelsize'] = 14
+    plt.rcParams['axes.titlesize'] = 14
+    plt.rcParams['xtick.labelsize'] = 12
+    plt.rcParams['ytick.labelsize'] = 12
 
 if __name__ == "__main__":
+    set_default_plot_params()
     # simulate_phantom_jam("all unsafe", animate=True)
     # simulate_phantom_jam("all safe", animate=True)
     # simulate_phantom_jam("one safe", animate=True)
