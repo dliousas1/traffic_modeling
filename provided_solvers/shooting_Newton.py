@@ -37,12 +37,12 @@ def shooting_Newton(eval_f, x0, p, eval_u, dt, errf, errDeltax, relDeltax, MaxIt
     if not use_GCR:
         # Solve using NewtonNd
         x0_pss, converged, errf_k, errDeltax_k, relDeltax_k, iterations, _ = newtonNd(
-            eval_f_Shooting, x0, p, np.nan, errf, errDeltax, relDeltax, MaxIter, visualize, FiniteDifferenceShooting, None
+            eval_f_Shooting, x0, p, np.nan, errf, errDeltax, relDeltax, MaxIter, FiniteDifferenceShooting, None, linearSolver="lstsq"
         )
     else:
         # Solve using NewtonNdGCR
         x0_pss, converged, errf_k, errDeltax_k, relDeltax_k, iterations, _ = newtonNdGCR(
-            eval_f_Shooting, x0, p, np.nan, errf, errDeltax, relDeltax, MaxIter, visualize, FiniteDifferenceShooting, None,
+            eval_f_Shooting, x0, p, np.nan, errf, errDeltax, relDeltax, MaxIter, FiniteDifferenceShooting, None,
             tolrGCR=1e-8, epsMF=1e-8
         )
 

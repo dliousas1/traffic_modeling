@@ -2,10 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Literal
 from scipy.linalg import solve_banded
-
+from numpy.linalg import lstsq
 from .visualize_state import visualize_state 
 from provided_solvers.eval_Jf_FiniteDifference import eval_Jf_FiniteDifference
-
 
 def to_banded(A, l, u):
     """
@@ -23,7 +22,7 @@ def to_banded(A, l, u):
 
     return ab
 
-def newtonNd(fhand, x0, p, u,errf,errDeltax,relDeltax,MaxIter, FiniteDifference, Jfhand, Jf_bandwidth=None, linearSolver: Literal["LU", "solve_banded"] = "LU", visualize=False):
+def newtonNd(fhand, x0, p, u,errf,errDeltax,relDeltax,MaxIter, FiniteDifference, Jfhand, Jf_bandwidth=None, linearSolver: Literal["LU", "solve_banded", "lstsq"] = "LU", visualize=False):
     """
     # uses Newton Method to solve the VECTOR nonlinear system f(x)=0.
     # uses a banded solver to solve the linear system at each Newton iteration
@@ -55,7 +54,6 @@ def newtonNd(fhand, x0, p, u,errf,errDeltax,relDeltax,MaxIter, FiniteDifference,
     k = 0                        # Newton iteration index
     X = np.zeros((len(x0), MaxIter+1))
     X[:,k] = x0                        # X stores intermetiade solutions as columns
-
     f = fhand(X[:, k], p, u)
     f = f[0] if isinstance(f, tuple) else f
 
@@ -74,6 +72,8 @@ def newtonNd(fhand, x0, p, u,errf,errDeltax,relDeltax,MaxIter, FiniteDifference,
         if linearSolver == "solve_banded":
             Jf_banded = to_banded(Jf, *Jf_bandwidth)
             Deltax = solve_banded(Jf_bandwidth, Jf_banded, -f)
+        elif linearSolver == "lstsq":
+            Deltax, _, _, _ = lstsq(Jf, -f)
         else:  # linearSolver == "LU"
             Deltax = np.linalg.solve(Jf, -f)
 
