@@ -23,80 +23,90 @@ def compute_total_accel(velocities, t):
     return accelerations, accel_integral
 
 def simulate_phantom_jam(driver_type: Literal["all unsafe", "all safe", "one safe"], animate: bool = False):
+
     # Define the number of cars in the example
     n_cars = 10
 
-    # Define the parameters and initial states for each car
-    param_dict = {"parameters": []}
-    x0 = []
-    for i in range(n_cars):
-        if driver_type == "all unsafe":
-            tau = 0.2  # Unsafe drivers
-            starting_dist = 3.0
+    # Check if results are already saved
+    results_file = f"results/phantom_jam_{driver_type}.npz"
+    if os.path.exists(results_file):
+        data = np.load(results_file)
+        x, t = data['x'], data['t']
+    else:
+        os.makedirs("results", exist_ok=True)
 
-        elif driver_type == "all safe":
-            tau = 0.5  # Safe drivers
-            starting_dist = 7.5
-        
-        elif driver_type == "one safe":
-            if i == n_cars - 4:
-                tau = 0.7  # Safe driver
-            else:
+        # Define the parameters and initial states for each car
+        param_dict = {"parameters": []}
+        x0 = []
+        for i in range(n_cars):
+            if driver_type == "all unsafe":
                 tau = 0.2  # Unsafe drivers
-            starting_dist = 3.0
-        else:
-            raise ValueError("Invalid driver_type. Choose from 'all unsafe', 'all safe', 'one safe'.")
-        
-        # Define parameters for each car (example)
-        params = Parameters(
-            alpha=1.0,
-            beta=1.0,
-            tau=tau,
-            K=3.0,
-            d0=2.0,
-            L=2.0,
+                starting_dist = 3.0
+
+            elif driver_type == "all safe":
+                tau = 0.5  # Safe drivers
+                starting_dist = 7.5
+            
+            elif driver_type == "one safe":
+                if i == n_cars - 4:
+                    tau = 0.7  # Safe driver
+                else:
+                    tau = 0.2  # Unsafe drivers
+                starting_dist = 3.0
+            else:
+                raise ValueError("Invalid driver_type. Choose from 'all unsafe', 'all safe', 'one safe'.")
+            
+            # Define parameters for each car (example)
+            params = Parameters(
+                alpha=1.0,
+                beta=1.0,
+                tau=tau,
+                K=3.0,
+                d0=2.0,
+                L=2.0,
+            )
+            param_dict["parameters"].append(params)
+
+            # Define initial state for each car (position and velocity)
+            if driver_type == "one safe" and i > n_cars - 4:
+                position = i * starting_dist + 7.5
+            else:
+                position = i * starting_dist
+            velocity = 15.0
+            x0.extend([position, velocity])
+
+        # Modify the second last car's position to be closer to the last car to induce phantom traffic jam
+        x0[-4] = x0[-2] - 0.5
+        x0 = np.array(x0)
+
+        # Simulation parameters
+        t0 = 0.0
+        tf = 20.0
+        rtol = 1e-6
+        atol = 1e-8
+        errf = 1e-8
+
+        # Run the simulation using the trapezoidal adaptive solver
+        x, t = trapezoidal_adaptive(
+            eval_f=eval_f,
+            x_start=x0,
+            p=param_dict,
+            eval_u=lambda t: 0.0,
+            t_start=t0,
+            t_stop=tf,
+            initial_timestep=0.01,
+            errf=errf,
+            errDeltax=atol,
+            relDeltax=rtol,
+            MaxIter=100000,
+            FiniteDifference=0,
+            Jf_eval=eval_Jf,
+            use_tqdm=True,
+            min_step_size=0.0001,
+            newton_linear_solver="solve_banded",
+            Jf_bandwidth=(1, 2),
         )
-        param_dict["parameters"].append(params)
-
-        # Define initial state for each car (position and velocity)
-        if driver_type == "one safe" and i > n_cars - 4:
-            position = i * starting_dist + 7.5
-        else:
-            position = i * starting_dist
-        velocity = 15.0
-        x0.extend([position, velocity])
-
-    # Modify the second last car's position to be closer to the last car to induce phantom traffic jam
-    x0[-4] = x0[-2] - 0.5
-    x0 = np.array(x0)
-
-    # Simulation parameters
-    t0 = 0.0
-    tf = 20.0
-    rtol = 1e-6
-    atol = 1e-8
-    errf = 1e-8
-
-    # Run the simulation using the trapezoidal adaptive solver
-    x, t = trapezoidal_adaptive(
-        eval_f=eval_f,
-        x_start=x0,
-        p=param_dict,
-        eval_u=lambda t: 0.0,
-        t_start=t0,
-        t_stop=tf,
-        initial_timestep=0.01,
-        errf=errf,
-        errDeltax=atol,
-        relDeltax=rtol,
-        MaxIter=100000,
-        FiniteDifference=0,
-        Jf_eval=eval_Jf,
-        use_tqdm=True,
-        min_step_size=0.0001,
-        newton_linear_solver="solve_banded",
-        Jf_bandwidth=(1, 2),
-    )
+        np.savez(results_file, x=x, t=t)
 
     if animate:
         positions = x[0::2, :].T
@@ -373,6 +383,9 @@ def demo_adaptive_timestepper():
     atol = 1e-8
     errf = 1e-8
 
+    os.makedirs("references", exist_ok=True)
+    os.makedirs("results", exist_ok=True)
+
     # Get a "golden" solution for reference
     ref_path = "references/golden_solution_adaptive_demo.npz"
     
@@ -396,51 +409,74 @@ def demo_adaptive_timestepper():
     fixed_dt = 0.05
 
     # Time to run adaptive vs fixed timestepper
+    
+    adaptive_path = "results/adaptive_timestepper_demo.npz"
+    
+    if os.path.exists(adaptive_path):
+        data = np.load(adaptive_path)
+        x_adaptive, t_adaptive = data['x_adaptive'], data['t_adaptive']
+        adaptive_time = float(data['adaptive_time'])
+    else:
+        start = time.time()
+        # Run the simulation using the trapezoidal adaptive solver
+        x_adaptive, t_adaptive = trapezoidal_adaptive(
+            eval_f=eval_f,
+            x_start=x0,
+            p=param_dict,
+            eval_u=lambda t: 0.0,
+            t_start=t0,
+            t_stop=tf,
+            initial_timestep=fixed_dt,
+            min_step_size=fixed_dt,
+            errf=errf,
+            errDeltax=atol,
+            relDeltax=rtol,
+            MaxIter=100000,
+            FiniteDifference=0,
+            Jf_eval=eval_Jf,
+            use_tqdm=True,
+            newton_linear_solver="solve_banded",
+            Jf_bandwidth=(1, 2),
+            return_full_traj=True,
+        )
+        end = time.time()
+        adaptive_time = end - start
+        np.savez(adaptive_path, x_adaptive=x_adaptive, t_adaptive=t_adaptive, adaptive_time=adaptive_time)
+    print(f"Adaptive Timestepper Time: {adaptive_time:.2f} seconds")
 
-    start = time.time()
-    # Run the simulation using the trapezoidal adaptive solver
-    x_adaptive, t_adaptive = trapezoidal_adaptive(
-        eval_f=eval_f,
-        x_start=x0,
-        p=param_dict,
-        eval_u=lambda t: 0.0,
-        t_start=t0,
-        t_stop=tf,
-        initial_timestep=fixed_dt,
-        min_step_size=fixed_dt,
-        errf=errf,
-        errDeltax=atol,
-        relDeltax=rtol,
-        MaxIter=100000,
-        FiniteDifference=0,
-        Jf_eval=eval_Jf,
-        use_tqdm=True,
-        newton_linear_solver="solve_banded",
-        Jf_bandwidth=(1, 2),
-        return_full_traj=True,
-    )
-    end = time.time()
-    print(f"Adaptive Timestepper Time: {end - start:.2f} seconds")
+    # Define a new filename for the fixed timestep results
+    fixed_results_file = "results/fixed_timestep_results_with_time.npz"
+    
+    # Check if results are already saved
+    if os.path.exists(fixed_results_file):
+        data = np.load(fixed_results_file)
+        x_fixed, t_fixed = data['x_fixed'], data['t_fixed']
+        original_time = data['original_time'].item()
+    else:
+        start = time.time()
+        # Run the simulation using the fixed timestep trapezoidal solver
+        x_fixed, t_fixed = trapezoidal(
+            eval_f=eval_f,
+            x_start=x0,
+            p=param_dict,
+            eval_u=lambda t: 0.0,
+            t_start=t0,
+            t_stop=tf,
+            timestep=fixed_dt,
+            MaxIter=100000,
+            FiniteDifference=0,
+            Jf_eval=eval_Jf,
+            newton_linear_solver="solve_banded",
+            Jf_bandwidth=(1, 2),
+            use_tqdm=True,
+        )
+        end = time.time()
+        original_time = end - start
+        
+        # Save the results along with the original run time
+        np.savez(fixed_results_file, x_fixed=x_fixed, t_fixed=t_fixed, original_time=original_time)
 
-    start = time.time()
-    # Run the simulation using the fixed timestep trapezoidal solver
-    x_fixed, t_fixed = trapezoidal(
-        eval_f=eval_f,
-        x_start=x0,
-        p=param_dict,
-        eval_u=lambda t: 0.0,
-        t_start=t0,
-        t_stop=tf,
-        timestep=fixed_dt,
-        MaxIter=100000,
-        FiniteDifference=0,
-        Jf_eval=eval_Jf,
-        newton_linear_solver="solve_banded",
-        Jf_bandwidth=(1, 2),
-        use_tqdm=True,
-    )
-    end = time.time()
-    print(f"Fixed Timestepper Time: {end - start:.2f} seconds")
+    print(f"Fixed Timestepper Time: {original_time:.2f} seconds")
 
     # Plot the timesteps taken by each method
     plt.figure(figsize=(10, 6))
